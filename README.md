@@ -43,18 +43,18 @@ cd subrecon
 Run the recon chain for a single domain:
 
 ```bash
-python src/recon_chain.py example.com
+python3 src/recon_chain.py example.com
 ```
 Filter down to HTTP 200s:
 
 ```bash
-python src/filter_200.py
+python3 src/filter_200.py
 ```
 
 (Optional) Clean up intermediates:
 
 ```bash
-python src/cleanup_recon.py
+python3 src/cleanup_recon.py
 ```
 Results:
 - `subs.txt` → deduped subdomains
@@ -66,18 +66,18 @@ Results:
 
 ```bash
 # Recon (quiet by default; add --verbose to stream)
-python src/recon_chain.py <domain> [--outdir <dir>] [--verbose]
+python3 src/recon_chain.py <domain> [--outdir <dir>] [--verbose]
 
 # Filter (default: keep 200; widen with --status)
-python src/filter_200.py [--status 200,301,302,401,403] [--input <file>] [--output <file>]
+python3 src/filter_200.py [--status 200,301,302,401,403] [--input <file>] [--output <file>]
 
 # Cleanup (delete intermediate files in current folder or a specific outdir)
-python src/cleanup_recon.py [--outdir <dir>]
+python3 src/cleanup_recon.py [--outdir <dir>]
 
 # Examples
-python src/recon_chain.py example.com --outdir outputs/example.com
-python src/filter_200.py --input outputs/example.com/live.txt --output outputs/example.com/live-200.txt --status 200,301,302
-python src/cleanup_recon.py --outdir outputs/example.com
+python3 src/recon_chain.py example.com --outdir outputs/example.com
+python3 src/filter_200.py --input outputs/example.com/live.txt --output outputs/example.com/live-200.txt --status 200,301,302
+python3 src/cleanup_recon.py --outdir outputs/example.com
 ```
 
 ## 🖥️ Demo
