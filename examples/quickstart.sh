@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage:
-#   ./examples/quickstart.sh example.com
+# Usage: ./examples/quickstart.sh <domain>
 
 domain="${1:-}"
 if [[ -z "$domain" ]]; then
@@ -12,14 +11,8 @@ fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "[*] Running recon_chain.py for $domain..."
-python "$ROOT_DIR/src/recon_chain.py" "$domain"
+python3 "$ROOT_DIR/src/recon_chain.py" "$domain" --outdir "outputs/$domain"
+python3 "$ROOT_DIR/src/filter_200.py" -i "outputs/$domain/live.txt" -o "outputs/$domain/live-200.txt"
 
-echo "[*] Filtering for 200s..."
-python "$ROOT_DIR/src/filter_200.py"
-
-# Uncomment to auto-clean:
-# echo "[*] Cleaning up..."
-# python "$ROOT_DIR/src/cleanup_recon.py"
-
-echo "[✔] Done. See: subs.txt, resolved.txt, live.txt, live-200.txt"
+echo ""
+echo "[✓] Results in outputs/$domain/"

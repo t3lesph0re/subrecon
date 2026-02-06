@@ -1,103 +1,103 @@
 # subrecon
 
-Tiny personal recon chain: **discover subdomains → resolve → probe → filter 200s → optional cleanup**.
+```
+             __
+   ___ __ __/ /  _______ _______  ___
+  (_-</ // / _ \/ __/ -_) __/ _ \/ _ \
+ /___/\_,_/_.__/_/  \__/\__/\___/_//_/
+        t3lesph0re
+```
 
-## 📂 What’s included
-- `src/recon_chain.py` — enumerate + probe (writes `subs_raw.txt`, `subs.txt`, `resolved.txt`, `live.txt`)
-- `src/filter_200.py` — read `live.txt`, keep `[200]`, write `live-200.txt`
-- `src/cleanup_recon.py` — remove intermediate files
+Subdomain recon chain: **enumerate → resolve → probe → filter**.
 
-## ⚙️ Requirements
+Takes a domain, finds subdomains from multiple sources, resolves them, probes for live web servers, and filters by status code. All output is plain text, one URL per line.
+
+## How it works
+
+| Step | Tool | Input | Output |
+|------|------|-------|--------|
+| 1. Enumerate | assetfinder + subfinder | domain | `subs.txt` |
+| 2. Resolve | dnsx | `subs.txt` | `resolved.txt` |
+| 3. Probe | httpx | `resolved.txt` | `live.txt` |
+| 4. Filter | filter_200.py | `live.txt` | `live-200.txt` |
+
+## Requirements
+
 - **Python 3.9+**
-- External CLI tools (must be installed and in your `$PATH`):
-  - [`assetfinder`](https://github.com/tomnomnom/assetfinder) – subdomain enumeration
-  - [`dnsx`](https://github.com/projectdiscovery/dnsx) – DNS resolution
-  - [`httpx`](https://github.com/projectdiscovery/httpx) – web probing
+- CLI tools in your `$PATH`:
+  - [`assetfinder`](https://github.com/tomnomnom/assetfinder) — subdomain enum (required)
+  - [`dnsx`](https://github.com/projectdiscovery/dnsx) — DNS resolution (required)
+  - [`httpx`](https://github.com/projectdiscovery/httpx) — web probing (required)
+  - [`subfinder`](https://github.com/projectdiscovery/subfinder) — additional enum sources (optional, recommended)
 
-## ⏳ Install the required CLI tools
+### Install tools
 
-**macOS (Homebrew)**
+**macOS:**
 ```bash
 brew install assetfinder
 brew install projectdiscovery/tap/dnsx
 brew install projectdiscovery/tap/httpx
+brew install projectdiscovery/tap/subfinder
 ```
 
-**Linux**
-Follow the instructions on each project page:
-- https://github.com/tomnomnom/assetfinder
-- https://github.com/projectdiscovery/dnsx
-- https://github.com/projectdiscovery/httpx
+**Linux:**
+```bash
+go install github.com/tomnomnom/assetfinder@latest
+go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+```
 
-**Windows**
-Sorry :)
-
-## 🚀 Quickstart
-
-Clone the repo:
+## Quickstart
 
 ```bash
 git clone https://github.com/t3lesph0re/subrecon.git
 cd subrecon
-```
-Run the recon chain for a single domain:
 
-```bash
+# Run the chain
 python3 src/recon_chain.py example.com
-```
-Filter down to HTTP 200s:
 
-```bash
+# Filter to 200s only
 python3 src/filter_200.py
-```
 
-(Optional) Clean up intermediates:
-
-```bash
+# Cleanup intermediates
 python3 src/cleanup_recon.py
 ```
-Results:
-- `subs.txt` → deduped subdomains
-- `resolved.txt` → DNS-resolved subdomains
-- `live.txt` → probed endpoints with status/title/tech
-- `live-200.txt` → filtered HTTP 200s
 
 ## Usage
 
 ```bash
-# Recon (quiet by default; add --verbose to stream)
+# Recon chain
 python3 src/recon_chain.py <domain> [--outdir <dir>] [--verbose]
 
-# Filter (default: keep 200; widen with --status)
-python3 src/filter_200.py [--status 200,301,302,401,403] [--input <file>] [--output <file>]
+# Filter by status code
+python3 src/filter_200.py [--status 200,301,302] [--input <file>] [--output <file>]
 
-# Cleanup (delete intermediate files in current folder or a specific outdir)
+# Cleanup
 python3 src/cleanup_recon.py [--outdir <dir>]
-
-# Examples
-python3 src/recon_chain.py example.com --outdir outputs/example.com
-python3 src/filter_200.py --input outputs/example.com/live.txt --output outputs/example.com/live-200.txt --status 200,301,302
-python3 src/cleanup_recon.py --outdir outputs/example.com
 ```
 
-## 🖥️ Demo
-Here’s an example run against the safe test domain [`example.com`](https://example.com):
-
-![Demo](examples/subrecon-demo.png)
-
-
-## 📝 Example (one-liner helper script)
-
-You can also use the included helper script:
+### Examples
 
 ```bash
+# Full chain with output directory
+python3 src/recon_chain.py example.com --outdir outputs/example.com --verbose
+
+# Filter for 200s and 301s
+python3 src/filter_200.py -i outputs/example.com/live.txt -o outputs/example.com/filtered.txt -s 200,301
+
+# One-liner helper
 ./examples/quickstart.sh example.com
 ```
 
-## ⚠️ Disclaimer 
+## Demo
 
-Use responsibly. Only test assets you own or have explicit permission to assess.
+![Demo](examples/subrecon-demo.png)
 
-## 📜 License
+## Disclaimer
 
-This project is licensed under the [MIT License](./LICENSE).
+Use responsibly. Only test domains you own or have explicit written permission to assess.
+
+## License
+
+[MIT](./LICENSE)

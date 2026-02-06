@@ -1,0 +1,32 @@
+I want to update all the source files in this repo. Do NOT delete any existing files. Create a git branch called "v2" first.
+
+1. Replace src/recon_chain.py with:
+- ASCII banner on startup
+- Add optional subfinder support (run alongside assetfinder, dedupe results in memory)
+- Remove shell=True from all subprocess calls — use list args instead
+- Replace manual sys.argv parsing with argparse (add -v short flag for --verbose)
+- Check that required tools (assetfinder, dnsx, httpx) exist before running, exit with clear message if missing
+- Eliminate subs_raw.txt intermediate — dedupe in memory, write subs.txt directly
+- Print counts at each step (e.g. "Found 200 unique subdomains → subs.txt")
+- Keep the same output files: subs.txt, resolved.txt, live.txt
+
+2. Replace src/filter_200.py with:
+- argparse with short flags: -i (input), -o (output), -s (status codes)
+- Same core filtering logic, just cleaner structure
+
+3. Replace src/cleanup_recon.py with:
+- argparse for --outdir
+- Cleaner output with count of removed files
+
+4. Replace README.md with:
+- ASCII art banner at top
+- One-line description: "Subdomain recon chain: enumerate → resolve → probe → filter"
+- Table showing the pipeline (step, tool, input, output)
+- Requirements section listing assetfinder, dnsx, httpx as required and subfinder as optional/recommended
+- Install instructions for both macOS (brew) and Linux (go install)
+- Quickstart, usage, examples sections
+- Keep the demo image reference and disclaimer
+
+5. Update examples/quickstart.sh to pass --outdir and use the filter with -i and -o flags pointing to the outdir.
+
+Show me the diff for every file before writing.
