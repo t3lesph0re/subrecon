@@ -1,5 +1,4 @@
 # subrecon
-
 ```
              __
    ___ __ __/ /  _______ _______  ___
@@ -8,31 +7,70 @@
         t3lesph0re
 ```
 
-Subdomain recon chain: **enumerate → resolve → probe → filter**.
+**Author:** [@t3lesph0re](https://github.com/t3lesph0re)
 
-Takes a domain, finds subdomains from multiple sources, resolves them, probes for live web servers, and filters by status code. All output is plain text, one URL per line.
+## What is subrecon?
 
-## How it works
+subrecon is a command-line tool that automates subdomain reconnaissance. It chains together industry-standard tools into a single command that takes a target domain and returns only the live, reachable web servers — filtering out the noise.
 
-| Step | Tool | Input | Output |
-|------|------|-------|--------|
-| 1. Enumerate | assetfinder + subfinder | domain | `subs.txt` |
-| 2. Resolve | dnsx | `subs.txt` | `resolved.txt` |
-| 3. Probe | httpx | `resolved.txt` | `live.txt` |
-| 4. Filter | filter_200.py | `live.txt` | `live-200.txt` |
+Given a domain, subrecon will:
 
-## Requirements
+1. **Enumerate** subdomains from multiple sources (assetfinder + subfinder)
+2. **Resolve** them via DNS to confirm they exist (dnsx)
+3. **Probe** each one for a live web server (httpx)
+4. **Filter** the results down to only HTTP 200 responses
 
-- **Python 3.9+**
-- CLI tools in your `$PATH`:
-  - [`assetfinder`](https://github.com/tomnomnom/assetfinder) — subdomain enum (required)
-  - [`dnsx`](https://github.com/projectdiscovery/dnsx) — DNS resolution (required)
-  - [`httpx`](https://github.com/projectdiscovery/httpx) — web probing (required)
-  - [`subfinder`](https://github.com/projectdiscovery/subfinder) — additional enum sources (optional, recommended)
+One command in. Clean list of live targets out.
+```
+subrecon example.com
 
-### Install tools
+[*] Target: example.com
 
-**macOS:**
+[1/3] Enumerating subdomains...
+      22253 unique → subs.txt
+[2/3] Resolving DNS...
+      9 resolved → resolved.txt
+[3/3] Probing for live hosts...
+      3 live → live.txt
+[4/4] Filtered [200] → 3 URL(s) → live-200.txt
+
+[✓] Results in outputs/example.com/
+```
+
+## Install
+
+### 1. Install subrecon
+```bash
+git clone https://github.com/t3lesph0re/subrecon.git
+cd subrecon
+```
+
+**macOS / Linux:**
+```bash
+pipx install .
+# or
+pip install .
+```
+
+**Windows (PowerShell):**
+```powershell
+pip install .
+```
+
+After install, `subrecon` is available as a command from anywhere.
+
+### 2. Install required CLI tools
+
+subrecon wraps these tools — they must be installed and in your `$PATH`:
+
+| Tool | Purpose | Required? |
+|------|---------|-----------|
+| [assetfinder](https://github.com/tomnomnom/assetfinder) | subdomain enumeration | Yes |
+| [dnsx](https://github.com/projectdiscovery/dnsx) | DNS resolution | Yes |
+| [httpx](https://github.com/projectdiscovery/httpx) | web probing | Yes |
+| [subfinder](https://github.com/projectdiscovery/subfinder) | additional enum sources | No (recommended) |
+
+**macOS (Homebrew):**
 ```bash
 brew install assetfinder
 brew install projectdiscovery/tap/dnsx
@@ -40,7 +78,7 @@ brew install projectdiscovery/tap/httpx
 brew install projectdiscovery/tap/subfinder
 ```
 
-**Linux:**
+**Linux (Go):**
 ```bash
 go install github.com/tomnomnom/assetfinder@latest
 go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest
@@ -48,47 +86,47 @@ go install github.com/projectdiscovery/httpx/cmd/httpx@latest
 go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
-## Quickstart
-
-```bash
-git clone https://github.com/t3lesph0re/subrecon.git
-cd subrecon
-
-# Run the chain
-python3 src/recon_chain.py example.com
-
-# Filter to 200s only
-python3 src/filter_200.py
-
-# Cleanup intermediates
-python3 src/cleanup_recon.py
+**Windows (Go):**
+```powershell
+go install github.com/tomnomnom/assetfinder@latest
+go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
+
+Make sure your Go bin directory is in your PATH. On Windows this is typically `%USERPROFILE%\go\bin`.
 
 ## Usage
-
 ```bash
-# Recon chain
-python3 src/recon_chain.py <domain> [--outdir <dir>] [--verbose]
+# Basic — all defaults
+subrecon example.com
 
-# Filter by status code
-python3 src/filter_200.py [--status 200,301,302] [--input <file>] [--output <file>]
+# Verbose — see tool output as it runs
+subrecon example.com -v
 
-# Cleanup
-python3 src/cleanup_recon.py [--outdir <dir>]
+# Custom output directory
+subrecon example.com -o ~/recon/target
+
+# Keep multiple status codes (not just 200)
+subrecon example.com -s 200,301,302
+
+# Skip the filter step entirely
+subrecon example.com --no-filter
+
+# Clean up output files
+subrecon clean outputs/example.com
 ```
 
-### Examples
+## How it works
 
-```bash
-# Full chain with output directory
-python3 src/recon_chain.py example.com --outdir outputs/example.com --verbose
+| Step | Tool | Output |
+|------|------|--------|
+| 1. Enumerate | assetfinder + subfinder | `subs.txt` |
+| 2. Resolve | dnsx | `resolved.txt` |
+| 3. Probe | httpx | `live.txt` |
+| 4. Filter | built-in | `live-200.txt` |
 
-# Filter for 200s and 301s
-python3 src/filter_200.py -i outputs/example.com/live.txt -o outputs/example.com/filtered.txt -s 200,301
-
-# One-liner helper
-./examples/quickstart.sh example.com
-```
+Results go to `outputs/<domain>/` by default.
 
 ## Demo
 
@@ -96,7 +134,7 @@ python3 src/filter_200.py -i outputs/example.com/live.txt -o outputs/example.com
 
 ## Disclaimer
 
-Use responsibly. Only test domains you own or have explicit written permission to assess.
+Only test domains you own or have explicit written permission to assess.
 
 ## License
 

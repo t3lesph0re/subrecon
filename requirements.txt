@@ -1,2 +1,0 @@
-# No Python package dependencies required.
-# Requires external tools: assetfinder, dnsx, httpx

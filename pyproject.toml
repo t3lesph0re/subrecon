@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "subrecon"
+version = "2.0.0"
+description = "Subdomain recon chain: enumerate, resolve, probe, filter"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "t3lesph0re"},
+]
+keywords = ["security", "recon", "subdomain", "pentest", "bugbounty"]
+
+[project.urls]
+Homepage = "https://github.com/t3lesph0re/subrecon"
+
+[project.scripts]
+subrecon = "subrecon.cli:main"
+
+[tool.setuptools]
+packages = ["subrecon"]
