@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from subrecon.cleanup import ARTIFACTS
+
 
 def has_tool(name: str) -> bool:
     return shutil.which(name) is not None
@@ -30,7 +32,7 @@ def run(cmd: list[str], verbose: bool = False, capture: bool = False) -> subproc
 
 
 def enumerate_subs(domain: str, verbose: bool = False) -> set[str]:
-    """Gather subdomains from available sources."""
+    """Gather subdomains from available sources, filtered to the target's scope."""
     subs = set()
 
     # assetfinder (required)
@@ -46,7 +48,20 @@ def enumerate_subs(domain: str, verbose: bool = False) -> set[str]:
     elif verbose:
         print("  [*] subfinder not found — skipping (install for better coverage)")
 
-    return subs
+    # Scope guard: enum sources return adjacent/related domains, so keep only
+    # hosts that are the target itself or a true subdomain of it. Anything out
+    # of scope must never reach the resolve/probe stages.
+    target = domain.lower().strip(".")
+    scoped = {
+        h.lower() for h in subs
+        if h.lower() == target or h.lower().endswith("." + target)
+    }
+
+    dropped = len(subs) - len(scoped)
+    if dropped and verbose:
+        print(f"  [*] dropped {dropped} out-of-scope host(s)")
+
+    return scoped
 
 
 def resolve_subs(subs_file: str, out_file: str, verbose: bool = False) -> None:
@@ -83,6 +98,12 @@ def run_chain(domain: str, outdir: str = ".", verbose: bool = False) -> str | No
         sys.exit(1)
 
     Path(outdir).mkdir(parents=True, exist_ok=True)
+
+    # Start each run from a clean slate. dnsx/httpx write with -o, which
+    # appends, so leftover files from a previous run would mix stale hosts
+    # into this run's results. Reset them so every run is reproducible.
+    for _name in ARTIFACTS:
+        Path(outdir, _name).unlink(missing_ok=True)
 
     subs_file = f"{outdir}/subs.txt"
     resolved_file = f"{outdir}/resolved.txt"
