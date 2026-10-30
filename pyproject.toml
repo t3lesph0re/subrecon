@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "subrecon"
-version = "2.0.0"
+dynamic = ["version"]
 description = "Subdomain recon chain: enumerate, resolve, probe, filter"
 readme = "README.md"
 license = "MIT"
@@ -22,3 +22,6 @@ subrecon = "subrecon.cli:main"
 
 [tool.setuptools]
 packages = ["subrecon"]
+
+[tool.setuptools.dynamic]
+version = {attr = "subrecon.__version__"}

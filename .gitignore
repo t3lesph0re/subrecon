@@ -1,7 +1,19 @@
+# Python
 __pycache__/
 *.py[cod]
-.DS_Store
-outputs/
-.venv/build/
 *.egg-info/
+
+# Packaging / environments
+.venv/
+venv/
+build/
+dist/
+
+# macOS
+.DS_Store
+
+# Recon run data — never commit scan results or resume state
+outputs/
+resume.cfg
 prompt.txt
+*.log

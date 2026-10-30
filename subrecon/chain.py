@@ -65,7 +65,8 @@ def probe_live(resolved_file: str, out_file: str, verbose: bool = False) -> None
 
 def count_lines(filepath: str) -> int:
     try:
-        return sum(1 for _ in open(filepath))
+        with open(filepath) as f:
+            return sum(1 for _ in f)
     except FileNotFoundError:
         return 0
 
